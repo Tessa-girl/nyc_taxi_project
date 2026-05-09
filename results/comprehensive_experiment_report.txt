@@ -1,0 +1,48 @@
+
+================================================================================
+实验结果总结报告
+================================================================================
+
+
+【Experiment 1: Data Loading Comparison】
+类型: Performance Benchmark
+时间: 2026-05-09T12:14:34.607294
+  pandas: {'method': 'Pandas Standard', 'read_time_seconds': 0.91, 'memory_mb': 616.31, 'num_records': 3475226}
+  polars: {'method': 'Polars', 'read_time_seconds': 0.99, 'memory_mb': 616.31, 'num_records': 3475226}
+--------------------------------------------------------------------------------
+
+【Experiment 2: Memory Optimization】
+类型: Memory Benchmark
+时间: 2026-05-09T12:14:54.835551
+  before_optimization: {'memory_mb': 1972.93, 'dtypes': {'VendorID': 'int32', 'tpep_pickup_datetime': 'datetime64[us]', 'tpep_dropoff_datetime': 'datetime64[us]', 'passenger_count': 'float64', 'trip_distance': 'float64', 'RatecodeID': 'float64', 'store_and_fwd_flag': 'object', 'PULocationID': 'int32', 'DOLocationID': 'int32', 'payment_type': 'int64', 'fare_amount': 'float64', 'extra': 'float64', 'mta_tax': 'float64', 'tip_amount': 'float64', 'tolls_amount': 'float64', 'improvement_surcharge': 'float64', 'total_amount': 'float64', 'congestion_surcharge': 'float64', 'Airport_fee': 'float64', 'cbd_congestion_fee': 'float64'}}
+  after_optimization: {'memory_mb': 875.7, 'dtypes': {'VendorID': 'int32', 'tpep_pickup_datetime': 'datetime64[us]', 'tpep_dropoff_datetime': 'datetime64[us]', 'passenger_count': 'float32', 'trip_distance': 'float32', 'RatecodeID': 'float32', 'store_and_fwd_flag': 'category', 'PULocationID': 'int32', 'DOLocationID': 'int32', 'payment_type': 'category', 'fare_amount': 'float32', 'extra': 'float32', 'mta_tax': 'float32', 'tip_amount': 'float32', 'tolls_amount': 'float32', 'improvement_surcharge': 'float32', 'total_amount': 'float32', 'congestion_surcharge': 'float32', 'Airport_fee': 'float32', 'cbd_congestion_fee': 'float32'}}
+  optimization_effect: {'memory_saved_mb': 1097.23, 'savings_percentage': 55.61, 'compression_ratio': 2.25}
+--------------------------------------------------------------------------------
+
+【Experiment 3: Vectorization Speedup】
+类型: Computation Benchmark
+时间: 2026-05-09T12:15:07.825959
+  loop_method: {'computation_time_seconds': 2.6833, 'num_records': 10000, 'computation_type': 'LocationID Difference (Loop)'}
+  vectorized_method: {'computation_time_seconds': 3e-05, 'num_records': 10000, 'computation_type': 'LocationID Difference (Vectorized)'}
+  speedup: {'acceleration_factor': 89669.86, 'time_saved_seconds': 2.6832, 'efficiency_improvement_pct': 100.0}
+--------------------------------------------------------------------------------
+
+【Experiment 4: Model Comparison】
+类型: Model Performance Benchmark
+时间: 2026-05-09T12:32:28.804361
+  model_metrics: {'linear_regression': {'RMSE': 1041.92, 'MAE': 324.63, 'R2': -0.9611, 'Log_RMSE': 0.8118, 'training_time_seconds': 6.59, 'prediction_time_seconds': 0.1626}, 'random_forest': {'RMSE': 212.05, 'MAE': 86.98, 'R2': 0.9188, 'Log_RMSE': 0.1887, 'training_time_seconds': 958.2, 'prediction_time_seconds': 0.9788}, 'lightgbm': {'RMSE': 153.81, 'MAE': 69.7, 'R2': 0.9573, 'Log_RMSE': 0.2024, 'training_time_seconds': 49.33, 'prediction_time_seconds': 2.2594}}
+  best_model: lightgbm
+  best_rmse: 153.8100
+--------------------------------------------------------------------------------
+
+【Experiment 5: Feature Ablation Study】
+类型: Feature Engineering Analysis
+时间: 2026-05-09T12:34:35.753602
+  baseline_no_features: {'config_name': 'Baseline (No Feature Engineering)', 'num_features': 5, 'RMSE': 277.61, 'MAE': 109.11, 'R2': 0.8608, 'Log_RMSE': 0.2435}
+  time_features_only: {'config_name': 'Time Features Only', 'num_features': 40, 'RMSE': 189.01, 'MAE': 78.9, 'R2': 0.9355, 'Log_RMSE': 0.2133}
+  time_spatial_features: {'config_name': 'Time + Spatial Features', 'num_features': 40, 'RMSE': 189.01, 'MAE': 78.9, 'R2': 0.9355, 'Log_RMSE': 0.2133}
+  all_features: {'config_name': 'All Features (Time + Spatial + Fare + Interaction)', 'num_features': 40, 'RMSE': 189.01, 'MAE': 78.9, 'R2': 0.9355, 'Log_RMSE': 0.2133}
+  feature_engineering_impact: {'rmse_improvement_pct': 31.92, 'baseline_rmse': 277.61, 'full_features_rmse': 189.01}
+--------------------------------------------------------------------------------
+
+总耗时: 20.12分钟 (1206.93秒)

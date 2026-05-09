@@ -247,60 +247,164 @@ class ResultVisualizer:
         logger.info(f"预测vs实际图已保存至: {save_path}")
         plt.close()
     
-    def plot_performance_metrics_radar(self, metrics_dict: Dict[str, Dict],
-                                      save_path: Optional[str] = None):
+    def plot_performance_comparison(self, methods: List[str], times: List[float], 
+                                   title: str = "Performance Comparison",
+                                   save_path: Optional[str] = None,
+                                   log_scale: bool = False):
         """
-        绘制性能指标雷达图
+        绘制性能对比图（通用）
         
         Args:
-            metrics_dict: 包含多个模型指标的字典
+            methods: 方法名称列表
+            times: 对应的时间列表
+            title: 图表标题
             save_path: 保存路径
+            log_scale: 是否使用对数刻度
         """
-        from math import pi
+        logger.info(f"绘制性能对比图: {title}")
         
-        logger.info("绘制性能雷达图...")
+        fig, ax = plt.subplots(figsize=(12, 6))
         
-        categories = ['RMSE', 'MAE', 'R2', '训练速度']
-        N = len(categories)
+        x_pos = np.arange(len(methods))
+        colors = plt.cm.viridis(np.linspace(0, 1, len(methods)))
         
-        fig, ax = plt.subplots(figsize=(10, 10), subplot_kw=dict(projection='polar'))
+        bars = ax.bar(x_pos, times, color=colors, edgecolor='black', alpha=0.8, width=0.6)
         
-        angles = [n / float(N) * 2 * pi for n in range(N)]
-        angles += angles[:1]
+        if log_scale:
+            ax.set_yscale('log')
+            ax.set_ylabel('Time (seconds, log scale)', fontsize=12)
+        else:
+            ax.set_ylabel('Time (seconds)', fontsize=12)
         
-        ax.set_theta_offset(pi / 2)
-        ax.set_theta_direction(-1)
+        ax.set_xticks(x_pos)
+        ax.set_xticklabels(methods, fontsize=11, fontweight='bold')
+        ax.set_title(title, fontsize=14, fontweight='bold', pad=15)
+        ax.grid(axis='y', alpha=0.3, linestyle='--')
         
-        plt.xticks(angles[:-1], categories, fontsize=12)
+        # 在柱子上标注数值
+        for bar, time_val in zip(bars, times):
+            height = bar.get_height()
+            if log_scale:
+                label = f'{time_val:.4f}s' if time_val < 1 else f'{time_val:.2f}s'
+            else:
+                label = f'{time_val:.2f}s'
+            ax.text(bar.get_x() + bar.get_width()/2., height,
+                   label, ha='center', va='bottom', fontsize=10, fontweight='bold')
         
-        ax.set_rlabel_position(0)
-        plt.yticks(fontsize=10)
-        
-        plt.grid(True, alpha=0.3)
-        
-        colors = plt.cm.Set1(np.linspace(0, 1, len(metrics_dict)))
-        
-        for idx, (model_name, metrics) in enumerate(metrics_dict.items()):
-            values = [
-                1 / (1 + metrics['RMSE']),  # 归一化
-                1 / (1 + metrics['MAE']),
-                metrics['R2'],
-                1 / (1 + metrics.get('training_time', 0))
-            ]
-            values += values[:1]
-            
-            ax.plot(angles, values, 'o-', linewidth=2.5, label=model_name, 
-                   color=colors[idx])
-            ax.fill(angles, values, alpha=0.15, color=colors[idx])
-        
-        plt.legend(loc='upper right', bbox_to_anchor=(1.3, 1.1), fontsize=10)
-        
-        plt.title('多模型性能雷达图', fontsize=14, fontweight='bold', pad=20)
+        plt.tight_layout()
         
         if save_path is None:
-            save_path = self.output_dir / "performance_radar.png"
+            save_path = self.output_dir / "performance_comparison.png"
         plt.savefig(save_path, dpi=300, bbox_inches='tight')
-        logger.info(f"性能雷达图已保存至: {save_path}")
+        logger.info(f"性能对比图已保存至: {save_path}")
+        plt.close()
+    
+    def plot_memory_comparison(self, labels: List[str], memories: List[float],
+                              title: str = "Memory Usage Comparison",
+                              save_path: Optional[str] = None):
+        """
+        绘制内存使用对比图
+        
+        Args:
+            labels: 标签列表
+            memories: 内存占用列表（MB）
+            title: 图表标题
+            save_path: 保存路径
+        """
+        logger.info(f"绘制内存对比图: {title}")
+        
+        fig, ax = plt.subplots(figsize=(10, 6))
+        
+        x_pos = np.arange(len(labels))
+        colors = ['#FF6B6B', '#4ECDC4']
+        
+        bars = ax.bar(x_pos, memories, color=colors, edgecolor='black', alpha=0.8, width=0.6)
+        
+        ax.set_xticks(x_pos)
+        ax.set_xticklabels(labels, fontsize=11, fontweight='bold')
+        ax.set_ylabel('Memory Usage (MB)', fontsize=12)
+        ax.set_title(title, fontsize=14, fontweight='bold', pad=15)
+        ax.grid(axis='y', alpha=0.3, linestyle='--')
+        
+        # 计算节省的百分比
+        if len(memories) == 2:
+            savings_pct = ((memories[0] - memories[1]) / memories[0] * 100)
+            ax.text(0.5, max(memories) * 0.9, 
+                   f'Savings: {savings_pct:.1f}%',
+                   ha='center', fontsize=12, fontweight='bold',
+                   bbox=dict(boxstyle='round,pad=0.5', facecolor='yellow', alpha=0.7))
+        
+        # 在柱子上标注数值
+        for bar, mem in zip(bars, memories):
+            height = bar.get_height()
+            ax.text(bar.get_x() + bar.get_width()/2., height,
+                   f'{mem:.1f} MB',
+                   ha='center', va='bottom', fontsize=10, fontweight='bold')
+        
+        plt.tight_layout()
+        
+        if save_path is None:
+            save_path = self.output_dir / "memory_comparison.png"
+        plt.savefig(save_path, dpi=300, bbox_inches='tight')
+        logger.info(f"内存对比图已保存至: {save_path}")
+        plt.close()
+    
+    def plot_feature_ablation_study(self, ablation_df: pd.DataFrame,
+                                   save_path: Optional[str] = None):
+        """
+        绘制特征消融实验结果
+        
+        Args:
+            ablation_df: 消融实验结果DataFrame
+            save_path: 保存路径
+        """
+        logger.info("绘制特征消融实验图...")
+        
+        fig, axes = plt.subplots(1, 2, figsize=(16, 6))
+        
+        # 准备数据
+        feature_sets = ablation_df['Feature Set'].values
+        rmse_values = ablation_df['RMSE'].values
+        r2_values = ablation_df['R2'].values
+        num_features = ablation_df['# Features'].values
+        
+        x_pos = np.arange(len(feature_sets))
+        colors = plt.cm.RdYlGn(np.linspace(0.2, 0.8, len(feature_sets)))
+        
+        # RMSE变化
+        bars1 = axes[0].bar(x_pos, rmse_values, color=colors, edgecolor='black', alpha=0.8, width=0.6)
+        axes[0].set_xticks(x_pos)
+        axes[0].set_xticklabels([f.split('(')[0].strip() for f in feature_sets], 
+                               rotation=15, ha='right', fontsize=9)
+        axes[0].set_ylabel('RMSE', fontsize=12)
+        axes[0].set_title('RMSE vs Feature Set', fontsize=14, fontweight='bold')
+        axes[0].grid(axis='y', alpha=0.3, linestyle='--')
+        
+        # 标注数值
+        for bar, val in zip(bars1, rmse_values):
+            axes[0].text(bar.get_x() + bar.get_width()/2., bar.get_height(),
+                        f'{val:.1f}', ha='center', va='bottom', fontsize=9, fontweight='bold')
+        
+        # R²变化
+        bars2 = axes[1].bar(x_pos, r2_values, color=colors, edgecolor='black', alpha=0.8, width=0.6)
+        axes[1].set_xticks(x_pos)
+        axes[1].set_xticklabels([f.split('(')[0].strip() for f in feature_sets], 
+                               rotation=15, ha='right', fontsize=9)
+        axes[1].set_ylabel('R² Score', fontsize=12)
+        axes[1].set_title('R² Score vs Feature Set', fontsize=14, fontweight='bold')
+        axes[1].grid(axis='y', alpha=0.3, linestyle='--')
+        
+        # 标注数值
+        for bar, val in zip(bars2, r2_values):
+            axes[1].text(bar.get_x() + bar.get_width()/2., bar.get_height(),
+                        f'{val:.4f}', ha='center', va='bottom', fontsize=9, fontweight='bold')
+        
+        plt.tight_layout()
+        
+        if save_path is None:
+            save_path = self.output_dir / "feature_ablation_study.png"
+        plt.savefig(save_path, dpi=300, bbox_inches='tight')
+        logger.info(f"特征消融实验图已保存至: {save_path}")
         plt.close()
 
 

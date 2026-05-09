@@ -2,7 +2,20 @@
 
 ## 📊 项目简介
 
-本项目基于Kaggle NYC Taxi Trip Duration数据集，构建完整的出租车行程时间预测系统。项目涵盖数据探索、清洗、特征工程、模型训练、性能优化和结果可视化的全流程，重点研究程序运行效率、模型训练速度、内存占用和预测精度的优化。
+本项目基于**NYC TLC官方2025年Yellow Taxi数据**，构建完整的出租车行程时间预测系统。项目涵盖数据探索、清洗、特征工程、模型训练、性能优化和结果可视化的全流程，重点研究程序运行效率、模型训练速度、内存占用和预测精度的优化。
+
+### ⚠️ 重要说明
+
+**关于数据集字段：**
+- 2025年新版NYC Taxi数据**不再包含经纬度字段**（pickup_longitude/latitude等）
+- 仅包含`PULocationID`和`DOLocationID`（纽约市265个出租车区域编码）
+- 这是NYC TLC官方的数据格式变更，项目代码已适配此变化
+- 使用LocationID构建空间特征是真实可靠的方案，详见[CLEANUP_AND_POLARS_GUIDE.txt](CLEANUP_AND_POLARS_GUIDE.txt)
+
+**关于Polars：**
+- Polars是高性能DataFrame库，比Pandas快3-10倍
+- 如未安装，实验1将跳过Polars对比，仅显示Pandas结果
+- 建议安装：`pip install polars`
 
 ## 🎯 项目目标
 
